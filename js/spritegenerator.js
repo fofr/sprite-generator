@@ -86,8 +86,11 @@ define(function() {
         };
 
         that.exportCanvas = function(canvasElement) {
-            var spriteOutputElement = new Image();
+            var spriteOutputElement = new Image(),
+                h2 = createHeading('Generated Sprite');
             spriteOutputElement.src = that.getDataUrl();
+
+            document.body.appendChild(h2);
             document.body.appendChild(spriteOutputElement);
         };
 
@@ -98,6 +101,7 @@ define(function() {
         that.generateCSS = function() {
 
             var css = '',
+                h2 = createHeading('Generated CSS');
                 styleElement = document.createElement('style');
 
             css += '.sprite {\n';
@@ -108,7 +112,7 @@ define(function() {
                 var file = images[i].file,
                     element = images[i].el;
 
-                css += '.sprite--' + stripFileExtension(file.name) + ' {\n';
+                css += '.sprite--' + getClassnameFromFilename(file.name) + ' {\n';
                 css += '\twidth: ' + element.width + 'px;\n';
                 css += '\theight: ' + element.height + 'px;\n';
                 css += '\tbackground-position: 0 -' + images[i].yOffset + 'px;\n';
@@ -118,6 +122,7 @@ define(function() {
             styleElement.setAttribute('class', 'generated-css');
             styleElement.innerHTML = css;
 
+            document.body.appendChild(h2);
             document.body.appendChild(styleElement);
         };
 
@@ -125,17 +130,17 @@ define(function() {
 
             var validation = document.createElement('div');
             validation.setAttribute('class', 'validation');
+            validation.appendChild(createHeading('CSS validation'));
 
             for(var i = 0, l = images.length; i < l; i++) {
                 var file = images[i].file,
-                    classname = stripFileExtension(file.name),
+                    classname = getClassnameFromFilename(file.name),
                     div = document.createElement('div'),
-                    h2 = document.createElement('h2');
+                    h3 = createHeading(classname, 'h3');
 
-                h2.innerText = classname;
                 div.setAttribute('class', 'sprite sprite--' + classname);
 
-                validation.appendChild(h2);
+                validation.appendChild(h3);
                 validation.appendChild(div);
             }
 
@@ -143,8 +148,16 @@ define(function() {
 
         };
 
-        function stripFileExtension(filename) {
-            return filename.substr(0, filename.lastIndexOf('.'));
+        function createHeading(text, level) {
+            var level = level || 'h2',
+                heading = document.createElement(level);
+
+            heading.innerText = text;
+            return heading;
+        }
+
+        function getClassnameFromFilename(filename) {
+            return filename.substr(0, filename.lastIndexOf('.')).replace(/[\._]/g,'-').toLowerCase();
         }
 
     };
