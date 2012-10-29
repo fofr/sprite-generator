@@ -9,6 +9,9 @@ define(function() {
         that.start = function() {
             var filesElement = document.getElementById('files');
             filesElement.addEventListener('change', that.handleFileSelect, false);
+
+            var generateForm = document.getElementById('generate');
+            generate.addEventListener('submit', that.updateSprite, false);
         };
 
         that.handleFileSelect = function(evt) {
@@ -32,7 +35,6 @@ define(function() {
 
                 fileReader.readAsDataURL(file);
             }
-            setTimeout(that.updateSprite, 500);
         };
 
         that.handleSelectedImageData = function(imageData, file) {
@@ -45,7 +47,8 @@ define(function() {
             })(file, image);
         };
 
-        that.updateSprite = function() {
+        that.updateSprite = function(evt) {
+            evt.preventDefault();
             that.generateSprite();
             that.generateCSS();
             that.validateCSS();
@@ -101,12 +104,17 @@ define(function() {
         that.generateCSS = function() {
 
             var css = '',
-                h2 = createHeading('Generated CSS');
+                h2 = createHeading('Generated CSS'),
+                hiddenStyleElement = document.createElement('style'),
                 styleElement = document.createElement('style');
 
             css += '.sprite {\n';
             css += '\tbackground-image: url(\'' + that.getDataUrl() + '\');\n';
             css += '}\n\n';
+
+            hiddenStyleElement.innerHTML = css;
+
+            css = '';
 
             for(var i = 0, l = images.length; i < l; i++) {
                 var file = images[i].file,
@@ -119,10 +127,16 @@ define(function() {
                 css += '}\n\n';
             }
 
+            styleElement.setAttribute('contenteditable', true);
             styleElement.setAttribute('class', 'generated-css');
             styleElement.innerHTML = css;
 
             document.body.appendChild(h2);
+
+            // Style element containing the data URI that we probably don't want to copy
+            document.body.appendChild(hiddenStyleElement);
+
+            // Visible style element containing the CSS we want to copy
             document.body.appendChild(styleElement);
         };
 

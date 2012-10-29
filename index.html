@@ -8,7 +8,17 @@
     </head>
     <body>
         <h1>Sprite Generator</h1>
-        <input type="file" id="files" multiple />
+
+        <form action="#" id="generate">
+            <fieldset>
+                <label for="files">Select multiple image files</label>
+                <input type="file" id="files" multiple />
+                <label for="resample">Generate retina and standard sprites (downscaled) from these images: <input type="checkbox" id="resample" checked /></label>
+            </fieldset>
+            <fieldset>
+                <input type="submit" value="Generate Sprite and CSS" />
+            </fieldset>
+        </form>
         <script src="js/lib/require.js"></script>
         <script>
             require(["js/spritegenerator"], function(SpriteGenerator) {
