@@ -5,13 +5,20 @@ define(function() {
         var that = this,
             images = [],
 
-            filesElement = document.getElementById('files'),
-            canvas = document.getElementById('sprite'),
-            canvasContext = canvas.getContext('2d'),
-            stylesElement = document.getElementById('styles'),
-            spriteOutputElement = document.getElementById('spriteOutput');
+            filesElement,
+            canvas,
+            canvasContext,
+            stylesElement,
+            spriteOutputElement;
 
         that.start = function() {
+
+            filesElement = document.getElementById('files');
+            canvas = document.getElementById('sprite');
+            canvasContext = canvas.getContext('2d');
+            stylesElement = document.getElementById('styles');
+            spriteOutputElement = document.getElementById('spriteOutput');
+
             filesElement.addEventListener('change', that.handleFileSelect, false);
         };
 
@@ -103,5 +110,5 @@ define(function() {
 
     };
 
-    return new SpriteGenerator();
+    return SpriteGenerator;
 });

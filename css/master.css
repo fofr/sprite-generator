@@ -1,0 +1,193 @@
+/* ==========================================================================
+   CSS reset
+   ========================================================================== */
+
+html, body, div, span, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, abbr, address, cite, code, del, dfn, em, img, ins, kbd, q, samp, small, strong, sub, sup, var, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, dialog, figure, footer, header, b, i, hgroup, menu, nav, section, time, mark, audio, video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    vertical-align: baseline;
+    background: transparent;
+}
+
+ol, ul {
+    list-style: none;
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+caption, th, td {
+    text-align: left;
+    font-weight: normal;
+}
+
+blockquote, q {
+    quotes: none;
+}
+
+blockquote:before, blockquote:after,
+q:before, q:after {
+    content: '';
+    content: none;
+}
+
+/* ==========================================================================
+   HTML5 styles
+   ========================================================================== */
+
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
+    display: block;
+}
+
+ins, mark {
+    background-color: #ff9;
+    text-decoration: none;
+}
+
+/* ==========================================================================
+   Form element fixes
+   ========================================================================== */
+
+button {
+    overflow: visible;
+    font-size: 1em;
+    padding: 0;
+}
+
+input, select {
+    vertical-align: middle;
+}
+
+/* ==========================================================================
+   Common styles
+   ========================================================================== */
+
+h1, h2, h3, h4, h5, h6, strong, .strong, b, th, dt, label, mark {
+    font-weight: bold;
+}
+
+i, em, .italic, blockquote, cite, q {
+    font-style: italic;
+}
+
+.norm, strong span, label span, h1 span, h2 span, h3 span {
+    font-weight: normal;
+}
+
+blockquote em, blockquote cite, blockquote i {
+    font-variant: normal;
+}
+
+small, .small {
+    font-size: smaller;
+}
+
+big, .big {
+    font-size: larger;
+}
+
+del, .strike {
+    text-decoration: line-through;
+}
+
+abbr[title], dfn[title] {
+    border-bottom: 1px dotted #000;
+    cursor: help;
+}
+
+/* ==========================================================================
+   Tools
+   ========================================================================== */
+
+.clearfix:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+
+.clear {
+    clear: both;
+}
+
+.ir, .sprite {
+    text-indent: -9999px;
+    overflow: hidden; /* Stop focus outline issues */
+}
+
+input.sprite, button.sprite {
+    cursor: pointer;
+}
+
+a.sprite {
+    display: block;
+}
+
+.align-right {
+    text-align: right;
+}
+
+.align-center {
+    text-align: center;
+}
+
+.hide, [hidden] {
+    display: none;
+}
+
+
+/* ==========================================================================
+   Typography
+   ========================================================================== */
+
+body {
+    font-size: 100%; /* 13px */
+    font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+}
+
+/* ==========================================================================
+   Sprite Generator
+   ========================================================================== */
+
+body {
+    padding: 24px;
+    background: #eee;
+    color: #444;
+}
+
+h1 {
+    font-size: 48px;
+    line-height: 1em;
+    margin-bottom: 24px;
+    text-shadow: #fff 0 1px 0;
+}
+
+/* ==========================================================================
+   File drop zone
+   ========================================================================== */
+
+.file-drop-zone {
+    border: 5px dashed #ccc;
+    border-radius: 10px;
+    padding: 24px;
+    position: absolute;
+    top: 96px;
+    bottom: 24px;
+    left: 24px;
+    right: 24px;
+    font-size: 24px;
+    line-height: 36px;
+    color: #777;
+}
+
+.file-drop-zone input {
+    font-size: 16px;
+    padding: 12px;
+    margin: 12px 0;
+    background: #ccc;
+}

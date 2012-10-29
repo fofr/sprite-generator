@@ -7,13 +7,21 @@
         <link rel="stylesheet" type="text/css" href="css/master.css">
     </head>
     <body>
-        <input type="file" id="files" multiple />
+        <h1>Sprite Generator</h1>
+        <div class="file-drop-zone">
+            Drag and drop files or:<br />
+            <input type="file" id="files" multiple />
+        </div>
+
+        <!--
         <canvas id="sprite"></canvas>
         <style id="styles"></style>
         <img src="" id="spriteOutput" alt="Sprite output file" />
+        -->
         <script src="js/lib/require.js"></script>
         <script>
-            require(["js/spritegenerator"], function(spriteGenerator) {
+            require(["js/spritegenerator"], function(SpriteGenerator) {
+                var spriteGenerator = new SpriteGenerator();
                 spriteGenerator.start();
             });
         </script>
