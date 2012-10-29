@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Jasmine Spec Runner</title>
+    <link rel="shortcut icon" type="image/png" href="lib/jasmine-1.2.0/jasmine_favicon.png">
+    <link rel="stylesheet" type="text/css" href="lib/jasmine-1.2.0/jasmine.css">
+
+    <script src="lib/jasmine-1.2.0/jasmine.js"></script>
+    <script src="lib/jasmine-1.2.0/jasmine-html.js"></script>
+    <script src="../js/lib/require.js"></script>
+
+    <!-- Use jQuery to trigger fake dom events -->
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
+    <script>
+        var specs = ['test/spec/spritegenerator.spec'];
+
+        requirejs.config({
+            baseUrl: '../'
+        });
+
+        requirejs(specs, function() {
+            jasmineEnv = jasmine.getEnv();
+            jasmineEnv.updateInterval = 1000;
+
+            var htmlReporter = new jasmine.HtmlReporter();
+            jasmineEnv.addReporter(htmlReporter);
+
+            jasmineEnv.specFilter = function(spec) {
+                return htmlReporter.specFilter(spec);
+            };
+
+            setTimeout(function() {
+                jasmineEnv.execute();
+            }, 50);
+        });
+    </script>
+</head>
+<body></body>
+</html>
