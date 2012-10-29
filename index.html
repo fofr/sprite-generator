@@ -1,87 +1,19 @@
 <!DOCTYPE html>
-<!--[if lt IE 7 ]><html lang="en" class="noJs ie ie6"><![endif]-->
-<!--[if IE 7 ]><html lang="en" class="noJs ie ie7"><![endif]-->
-<!--[if IE 8 ]><html lang="en" class="noJs ie ie8"><![endif]-->
-<!--[if IE 9 ]><html lang="en" class="noJs ie ie9"><![endif]-->
-<!--[if (gt IE 9)|!(IE)]><!--><html lang="en" class="noJs"><!--<![endif]--> <head>
+<html>
+    <head>
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <title></title>
-        <meta name="description" content="">
-        <script>(function(d){d.className=d.className.replace(/^noJs\b/,'js');}(document.documentElement));</script>
+        <title>Sprite Generator</title>
         <link rel="stylesheet" type="text/css" href="css/master.css">
     </head>
     <body>
-        <!-- From http://www.html5rocks.com/en/tutorials/file/dndfiles/ -->
-
-        <style>
-          .thumb {
-            height: 75px;
-            border: 1px solid #000;
-            margin: 10px 5px 0 0;
-          }
-        </style>
-
-        <input type="file" id="files" name="files[]" multiple />
-        <output id="list"></output>
+        <input type="file" id="files" multiple />
         <canvas id="viewport"></canvas>
-
+        <script src="js/lib/require.js"></script>
         <script>
-
-        var canvas = document.getElementById('viewport'),
-            context = canvas.getContext('2d');
-
-        function handleFileSelect(evt) {
-            var files = evt.target.files; // FileList object
-
-            // Loop through the FileList and render image files as thumbnails.
-            for (var i = 0, f; f = files[i]; i++) {
-
-                // Only process image files.
-                if (!f.type.match('image.*')) {
-                  continue;
-                }
-
-                var reader = new FileReader();
-
-                // Closure to capture the file information.
-                reader.onload = (function(theFile) {
-                    return function(e) {
-
-                        var base_image = new Image();
-
-                        base_image.src = e.target.result;
-                        base_image.onload = function(){
-                            context.drawImage(base_image, 100, 100);
-                        }
-
-                      // Render thumbnail.
-                      //var span = document.createElement('span');
-                      //span.innerHTML = ['<img class="thumb" src="', e.target.result, '" title="', escape(theFile.name), '"/>'].join('');
-                      //document.getElementById('list').insertBefore(span, null);
-                    };
-                })(f);
-
-                // Read in the image file as a data URL.
-                reader.readAsDataURL(f);
-            }
-        }
-
-        document.getElementById('files').addEventListener('change', handleFileSelect, false);
-
-
-
-
-        /*make_base();
-
-        function make_base() {
-          base_image = new Image();
-          base_image.src = 'img/base.png';
-          base_image.onload = function(){
-            context.drawImage(base_image, 100, 100);
-          }
-        } */
-
+            require(["js/spritegenerator"], function(spriteGenerator) {
+                spriteGenerator.start();
+            });
         </script>
     </body>
 </html>
