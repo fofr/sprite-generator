@@ -6,8 +6,10 @@ define(function() {
             images = [],
 
             filesElement = document.getElementById('files'),
-            canvas = document.getElementById('viewport'),
-            canvasContext = canvas.getContext('2d');
+            canvas = document.getElementById('sprite'),
+            canvasContext = canvas.getContext('2d'),
+            stylesElement = document.getElementById('styles'),
+            spriteOutputElement = document.getElementById('spriteOutput');
 
         that.start = function() {
             filesElement.addEventListener('change', that.handleFileSelect, false);
@@ -35,15 +37,21 @@ define(function() {
 
                 fileReader.readAsDataURL(file);
             }
-            setTimeout(that.drawCanvas, 5000);
+            setTimeout(that.updateSprite, 5000);
         };
 
         that.handleImageData = function(imageData, file) {
             var image = new Image();
             image.src = imageData;
-            image.onload = function(){
-                images.push({file: file, el: image});
+            image.onload = function() {
+                images.push({file: file, el: image, width: image.width, height: image.height});
             }
+        };
+
+        that.updateSprite = function() {
+            that.drawCanvas();
+            that.generateCSS();
+            that.exportCanvas();
         };
 
         that.drawCanvas = function() {
@@ -66,11 +74,30 @@ define(function() {
             for(var i = 0, l = images.length; i < l; i++) {
                 var imageElement = images[i].el;
                 canvasContext.drawImage(imageElement, 0, yOffset);
+                images[i].yOffset = yOffset;
                 yOffset = yOffset + imageElement.height;
             }
-        }
+        };
 
-        that.renderCss = function() {
+        that.exportCanvas = function() {
+
+            var dataUrl = canvas.toDataURL();
+            spriteOutputElement.src = dataUrl;
+
+        };
+
+        that.generateCSS = function() {
+
+            /*var generatedStyles = '';
+
+            for(var i = 0, l = images.length; i < l; i++) {
+                var file = images[i].file;
+
+                var css = '';
+
+                canvasContext.drawImage(imageElement, 0, yOffset);
+                yOffset = yOffset + imageElement.height;
+            } */
 
         };
 
