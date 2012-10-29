@@ -4,21 +4,10 @@ define(function() {
 
         var that = this,
             images = [],
-
-            filesElement,
-            canvas,
-            canvasContext,
-            stylesElement,
-            spriteOutputElement;
+            canvasElement;
 
         that.start = function() {
-
-            filesElement = document.getElementById('files');
-            canvas = document.getElementById('sprite');
-            canvasContext = canvas.getContext('2d');
-            stylesElement = document.getElementById('styles');
-            spriteOutputElement = document.getElementById('spriteOutput');
-
+            var filesElement = document.getElementById('files');
             filesElement.addEventListener('change', that.handleFileSelect, false);
         };
 
@@ -26,7 +15,6 @@ define(function() {
             var fileList = evt.target.files; // FileList object
 
             for (var i = 0, l = fileList.length; i < l; i++) {
-
                 var file = fileList[i],
                     fileReader = new FileReader();
 
@@ -38,35 +26,40 @@ define(function() {
                 // Use anonymous immediate function to retain correct file scope
                 fileReader.onload = (function(file) {
                     return function(loadEvent) {
-                        that.handleImageData(loadEvent.target.result, file);
+                        that.handleSelectedImageData(loadEvent.target.result, file);
                     };
                 })(file);
 
                 fileReader.readAsDataURL(file);
             }
-            setTimeout(that.updateSprite, 5000);
+            setTimeout(that.updateSprite, 500);
         };
 
-        that.handleImageData = function(imageData, file) {
+        that.handleSelectedImageData = function(imageData, file) {
             var image = new Image();
             image.src = imageData;
-            image.onload = function() {
-                images.push({file: file, el: image, width: image.width, height: image.height});
-            }
+            image.onload = (function(file, image) {
+                return function() {
+                    images.push({file: file, el: image});
+                };
+            })(file, image);
         };
 
         that.updateSprite = function() {
-            that.drawCanvas();
+            that.generateSprite();
             that.generateCSS();
-            that.exportCanvas();
+            that.validateCSS();
         };
 
-        that.drawCanvas = function() {
+        that.generateSprite = function() {
 
             var canvasHeight = 0,
                 canvasWidth = 0,
                 yOffset = 0;
 
+            canvasElement = document.createElement('canvas');
+
+            // Determine sprite dimensions
             for(var i = 0, l = images.length; i < l; i++) {
                 var imageElement = images[i].el;
                 if(imageElement.width > canvasWidth) {
@@ -75,38 +68,84 @@ define(function() {
                 canvasHeight = canvasHeight + imageElement.height;
             }
 
-            canvas.height = canvasHeight;
-            canvas.width = canvasWidth;
+            canvasElement.height = canvasHeight;
+            canvasElement.width = canvasWidth;
 
+            // Insert images into canvas
             for(var i = 0, l = images.length; i < l; i++) {
-                var imageElement = images[i].el;
+                var imageElement = images[i].el,
+                    canvasContext = canvasElement.getContext('2d');
+
                 canvasContext.drawImage(imageElement, 0, yOffset);
                 images[i].yOffset = yOffset;
                 yOffset = yOffset + imageElement.height;
             }
+
+            // Export canvas to image element for saving
+            that.exportCanvas(canvasElement);
         };
 
-        that.exportCanvas = function() {
+        that.exportCanvas = function(canvasElement) {
+            var spriteOutputElement = new Image();
+            spriteOutputElement.src = that.getDataUrl();
+            document.body.appendChild(spriteOutputElement);
+        };
 
-            var dataUrl = canvas.toDataURL();
-            spriteOutputElement.src = dataUrl;
-
+        that.getDataUrl = function() {
+            return canvasElement.toDataURL();
         };
 
         that.generateCSS = function() {
 
-            /*var generatedStyles = '';
+            var css = '',
+                styleElement = document.createElement('style');
+
+            css += '.sprite {\n';
+            css += '\tbackground-image: url(\'' + that.getDataUrl() + '\');\n';
+            css += '}\n\n';
 
             for(var i = 0, l = images.length; i < l; i++) {
-                var file = images[i].file;
+                var file = images[i].file,
+                    element = images[i].el;
 
-                var css = '';
+                css += '.sprite--' + stripFileExtension(file.name) + ' {\n';
+                css += '\twidth: ' + element.width + 'px;\n';
+                css += '\theight: ' + element.height + 'px;\n';
+                css += '\tbackground-position: 0 -' + images[i].yOffset + 'px;\n';
+                css += '}\n\n';
+            }
 
-                canvasContext.drawImage(imageElement, 0, yOffset);
-                yOffset = yOffset + imageElement.height;
-            } */
+            styleElement.setAttribute('class', 'generated-css');
+            styleElement.innerHTML = css;
+
+            document.body.appendChild(styleElement);
+        };
+
+        that.validateCSS = function() {
+
+            var validation = document.createElement('div');
+            validation.setAttribute('class', 'validation');
+
+            for(var i = 0, l = images.length; i < l; i++) {
+                var file = images[i].file,
+                    classname = stripFileExtension(file.name),
+                    div = document.createElement('div'),
+                    h2 = document.createElement('h2');
+
+                h2.innerText = classname;
+                div.setAttribute('class', 'sprite sprite--' + classname);
+
+                validation.appendChild(h2);
+                validation.appendChild(div);
+            }
+
+            document.body.appendChild(validation);
 
         };
+
+        function stripFileExtension(filename) {
+            return filename.substr(0, filename.lastIndexOf('.'));
+        }
 
     };
 
