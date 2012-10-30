@@ -102,7 +102,7 @@ define(function() {
 
                     it('should append each images\'s vertical position in the canvas to the images array', function() {
                         spriteGenerator.setCanvasDimensions(images, canvas);
-                        spriteGenerator.drawCanvas(images,canvas, false);
+                        spriteGenerator.drawCanvas(images, canvas, false);
 
                         expect(images[0].yOffset).toBe(0);
                         expect(images[1].yOffset).toBe(16);
@@ -110,7 +110,7 @@ define(function() {
 
                     it('should append smaller vertical offsets when downscaling', function() {
                         spriteGenerator.setCanvasDimensions(images, canvas, true);
-                        spriteGenerator.drawCanvas(images,canvas, true);
+                        spriteGenerator.drawCanvas(images, canvas, true);
                         expect(images[1].yOffset).toBe(8);
                     });
 
@@ -123,7 +123,7 @@ define(function() {
                         });
 
                         spriteGenerator.setCanvasDimensions(images, canvas);
-                        spriteGenerator.drawCanvas(images,canvas, false);
+                        spriteGenerator.drawCanvas(images, canvas, false);
 
                         expect(context.drawImage.callCount).toBe(2);
                         expect(context.drawImage.mostRecentCall.args[1]).toBe(0);
@@ -141,7 +141,7 @@ define(function() {
                         });
 
                         spriteGenerator.setCanvasDimensions(images, canvas, true);
-                        spriteGenerator.drawCanvas(images,canvas, true);
+                        spriteGenerator.drawCanvas(images, canvas, true);
 
                         expect(context.drawImage.callCount).toBe(2);
                         expect(context.drawImage.mostRecentCall.args[1]).toBe(0);
@@ -156,7 +156,7 @@ define(function() {
 
                     it('should append an image element to the body', function() {
                         spriteGenerator.setCanvasDimensions(images, canvas);
-                        spriteGenerator.drawCanvas(images,canvas);
+                        spriteGenerator.drawCanvas(images, canvas);
 
                         spyOn(canvas, 'toDataURL').andCallThrough();
                         spyOn(document.body, 'appendChild');
@@ -173,12 +173,65 @@ define(function() {
 
                     it('should append a heading and two style elements', function() {
                         spriteGenerator.setCanvasDimensions(images, canvas);
-                        spriteGenerator.drawCanvas(images,canvas);
+                        spriteGenerator.drawCanvas(images, canvas);
 
                         spyOn(document.body, 'appendChild');
-                        spriteGenerator.generateCSS(images,canvas);
+                        spriteGenerator.generateCSS(images, canvas);
 
-                        expect(document.body.appendChild.callCount).toBe(3);
+                        expect(document.body.appendChild.argsForCall[0][0].tagName).toBe('H2');
+                        expect(document.body.appendChild.argsForCall[1][0].tagName).toBe('STYLE');
+                        expect(document.body.appendChild.argsForCall[2][0].tagName).toBe('STYLE');
+                    });
+
+                    it('should generate validation CSS with the sprite background-image defined for testing in page', function() {
+                        spriteGenerator.setCanvasDimensions(images, canvas);
+                        spriteGenerator.drawCanvas(images, canvas);
+
+                        spyOn(document.body, 'appendChild');
+                        spriteGenerator.generateCSS(images, canvas);
+
+                        var validationCSS = document.body.appendChild.argsForCall[1][0].innerHTML;
+
+                        expect(/data:image\/png;base64/.test(validationCSS)).toBe(true);
+                        expect(/retina/.test(validationCSS)).toBe(false);
+                    });
+
+                    it('should include retina styles when downscaling', function() {
+                        spriteGenerator.setCanvasDimensions(images, canvas, true);
+                        spriteGenerator.drawCanvas(images, canvas, true);
+
+                        spyOn(document.body, 'appendChild');
+                        spriteGenerator.generateCSS(images, canvas, true, canvas);
+
+                        var validationCSS = document.body.appendChild.argsForCall[1][0].innerHTML;
+
+                        expect(validationCSS.match(/data:image\/png;base64/g).length).toBe(3);
+                        expect(/sprite--retina/.test(validationCSS)).toBe(true);
+                        expect(/min-device-pixel/.test(validationCSS)).toBe(true);
+                    });
+
+                    it('should generate the correct sprite CSS in a selectable style element', function() {
+                        spriteGenerator.setCanvasDimensions(images, canvas);
+                        spriteGenerator.drawCanvas(images, canvas);
+
+                        spyOn(document.body, 'appendChild');
+                        spriteGenerator.generateCSS(images, canvas);
+
+                        var spriteCSS = document.body.appendChild.argsForCall[2][0].innerHTML;
+
+                        expect(document.body.appendChild.argsForCall[2][0].getAttribute('contenteditable')).toBe('true');
+
+                        expect(spriteCSS.match(/width:/g).length).toBe(images.length);
+                        expect(spriteCSS.match(/width: 5px/g).length).toBe(1);
+                        expect(spriteCSS.match(/width: 16px/g).length).toBe(1);
+
+                        expect(spriteCSS.match(/height:/g).length).toBe(images.length);
+                        expect(spriteCSS.match(/height: 5px/g).length).toBe(1);
+                        expect(spriteCSS.match(/height: 16px/g).length).toBe(1);
+
+                        expect(spriteCSS.match(/background\-position:/g).length).toBe(images.length);
+                        expect(spriteCSS.match(/background\-position: 0 \-0/g).length).toBe(1);
+                        expect(spriteCSS.match(/background\-position: 0 \-16px/g).length).toBe(1);
                     });
 
                 });
