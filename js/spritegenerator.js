@@ -18,10 +18,11 @@ define(function() {
             filesElement.addEventListener('change', that.handleFileSelect, false);
 
             var generateForm = document.getElementById('generate');
-            generateForm.addEventListener('submit', that.generateSprite, false);
+            generateForm.addEventListener('submit', that.handleFormSubmit, false);
         };
 
         that.handleFileSelect = function(evt) {
+
             var fileList = evt.target.files; // FileList object
 
             for (var i = 0, l = fileList.length; i < l; i++) {
@@ -34,28 +35,24 @@ define(function() {
                 }
 
                 // Use anonymous immediate function to retain correct file scope
-                fileReader.onload = (function(file) {
+                fileReader.onload = (function(filename) {
                     return function(loadEvent) {
-                        that.handleSelectedImageData(loadEvent.target.result, file);
+                        that.handleSelectedImageData(images, loadEvent.target.result, filename);
                     };
                 })(file);
 
                 // Parse image file information
-                fileReader.readAsDataURL(file);
+                fileReader.readAsDataURL(file.name);
             }
         };
 
-        that.handleSelectedImageData = function(imageData, file) {
+        that.handleSelectedImageData = function(images, imageData, filename) {
             var image = new Image();
             image.src = imageData;
-            image.onload = (function(file, image) {
-                return function() {
-                    images.push({file: file, el: image});
-                };
-            })(file, image);
+            images.push({filename: filename, el: image});
         };
 
-        that.generateSprite = function(evt) {
+        that.handleFormSubmit = function(evt) {
             evt.preventDefault();
 
             if(images.length === 0) {
@@ -66,31 +63,37 @@ define(function() {
             // Hide the form now we've used it
             evt.target.hidden = true;
 
+            var downsample = document.getElementById('resample').checked;
+
+            that.generateSprite(images, downsample);
+        };
+
+        that.generateSprite = function(images, downsample) {
+
             var originalCanvas = document.createElement('canvas'),
                 downsampledCanvas,
-                downsample = document.getElementById('resample').checked,
                 h2 = createHeading(downsample ? 'Generated Sprites' : 'Generated Sprite');
 
             document.body.appendChild(h2);
 
-            that.setCanvasDimensions(originalCanvas);
-            that.drawCanvas(originalCanvas);
+            that.setCanvasDimensions(images, originalCanvas);
+            that.drawCanvas(images, originalCanvas);
             that.exportCanvasToImage(originalCanvas);
 
             if(downsample) {
                 downsampledCanvas = document.createElement('canvas');
-                that.setCanvasDimensions(downsampledCanvas, downsample);
-                that.drawCanvas(downsampledCanvas, downsample);
+                that.setCanvasDimensions(images, downsampledCanvas, downsample);
+                that.drawCanvas(images, downsampledCanvas, downsample);
                 that.exportCanvasToImage(downsampledCanvas);
-                that.generateCSS(downsampledCanvas, downsample, originalCanvas);
+                that.generateCSS(images, downsampledCanvas, downsample, originalCanvas);
             } else {
-                that.generateCSS(originalCanvas);
+                that.generateCSS(images, originalCanvas);
             }
 
-            that.validateCSS(downsample);
+            that.validateCSS(images, downsample);
         };
 
-        that.setCanvasDimensions = function(canvas, downsample) {
+        that.setCanvasDimensions = function(images, canvas, downsample) {
 
             var canvasHeight = 0,
                 canvasWidth = 0;
@@ -111,7 +114,7 @@ define(function() {
             canvas.width = canvasWidth;
         };
 
-        that.drawCanvas = function(canvas, downsample) {
+        that.drawCanvas = function(images, canvas, downsample) {
 
             var yOffset = 0;
 
@@ -134,7 +137,7 @@ define(function() {
             document.body.appendChild(spriteOutputElement);
         };
 
-        that.generateCSS = function(canvas, includeRetina, retinaCanvas) {
+        that.generateCSS = function(images, canvas, includeRetina, retinaCanvas) {
 
             var css = '',
                 downsample = !!(includeRetina),
@@ -175,12 +178,12 @@ define(function() {
             css += '\n/* Copy me */\n';
 
             for(var i = 0, l = images.length; i < l; i++) {
-                var file = images[i].file,
+                var filename = images[i].filename,
                     element = images[i].el,
                     width = downsample ? downsampleProperty(element.width) : element.width,
                     height = downsample ? downsampleProperty(element.height) : element.height;
 
-                css += '.sprite--' + getClassnameFromFilename(file.name) + ' {\n';
+                css += '.sprite--' + getClassnameFromFilename(filename) + ' {\n';
                 css += '\twidth: ' + width + 'px;\n';
                 css += '\theight: ' + height + 'px;\n';
                 css += '\tbackground-position: 0 -' + images[i].yOffset + 'px;\n';
@@ -200,15 +203,15 @@ define(function() {
             document.body.appendChild(styleElement);
         };
 
-        that.validateCSS = function(includeRetina) {
+        that.validateCSS = function(images, includeRetina) {
 
             var validationElement = document.createElement('div');
             validationElement.setAttribute('class', 'validationElement');
             validationElement.appendChild(createHeading('Sprite and CSS validationElement'));
 
             for(var i = 0, l = images.length; i < l; i++) {
-                var file = images[i].file,
-                    classname = getClassnameFromFilename(file.name),
+                var filename = images[i].filename,
+                    classname = getClassnameFromFilename(filename),
                     div = document.createElement('div'),
                     retinaDiv,
                     h3 = createHeading(classname, 'h3');
