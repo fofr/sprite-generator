@@ -42,7 +42,7 @@ define(function() {
                 })(file);
 
                 // Parse image file information
-                fileReader.readAsDataURL(file.name);
+                fileReader.readAsDataURL(file);
             }
         };
 
