@@ -233,7 +233,7 @@ define(function() {
             var level = level || 'h2',
                 heading = document.createElement(level);
 
-            heading.innerText = text;
+            heading.innerHTML = text;
             return heading;
         }
 
