@@ -1,3 +1,11 @@
+/**
+ * Sprite Generator
+ * Takes a set of images, arranges them in a canvas, saves out the
+ * canvas to an image element and generates the corresponding CSS.
+ *
+ * When the retina option is enabled, the image set is downscaled
+ * by 50% using canvas. Extra CSS is also output.
+ */
 define(function() {
 
     var SpriteGenerator = function() {
@@ -55,6 +63,7 @@ define(function() {
                 return;
             }
 
+            // Hide the form now we've used it
             evt.target.hidden = true;
 
             var originalCanvas = document.createElement('canvas'),
@@ -66,13 +75,13 @@ define(function() {
 
             that.setCanvasDimensions(originalCanvas);
             that.drawCanvas(originalCanvas);
-            that.exportCanvas(originalCanvas);
+            that.exportCanvasToImage(originalCanvas);
 
             if(downsample) {
                 downsampledCanvas = document.createElement('canvas');
                 that.setCanvasDimensions(downsampledCanvas, downsample);
                 that.drawCanvas(downsampledCanvas, downsample);
-                that.exportCanvas(downsampledCanvas);
+                that.exportCanvasToImage(downsampledCanvas);
                 that.generateCSS(downsampledCanvas, downsample, originalCanvas);
             } else {
                 that.generateCSS(originalCanvas);
@@ -119,7 +128,7 @@ define(function() {
             }
         };
 
-        that.exportCanvas = function(canvas) {
+        that.exportCanvasToImage = function(canvas) {
             var spriteOutputElement = new Image();
             spriteOutputElement.src = canvas.toDataURL();
             document.body.appendChild(spriteOutputElement);
@@ -141,7 +150,8 @@ define(function() {
             if(includeRetina) {
 
                 // Bulletproof retina media query (Firefox, Opera, Webkit and defaults)
-                css += '@media only screen and ((min--moz-device-pixel-ratio: 1.5), (-o-min-device-pixel-ratio: 3/2), (-webkit-min-device-pixel-ratio: 1.5), (min-device-pixel-ratio: 1.5), (min-resolution: 1.5dppx)) {\n';
+                // From: https://gist.github.com/2997187
+                css += '@media (min--moz-device-pixel-ratio: 1.5), (-o-min-device-pixel-ratio: 3/2), (-webkit-min-device-pixel-ratio: 1.5), (min-device-pixel-ratio: 1.5), (min-resolution: 1.5dppx) {\n';
                 css += '\t.sprite {\n';
                 css += '\t\t background-image: url(\''+ retinaCanvas.toDataURL() +'\');\n';
 
@@ -151,7 +161,7 @@ define(function() {
                 css += '\t}\n';
                 css += '}\n';
 
-                css += '\n/* For retina validation only, do not copy */\n';
+                css += '\n/* For retina validationElement only, do not copy */\n';
                 css += '.sprite--retina {\n';
                 css += '\t background-image: url(\''+ retinaCanvas.toDataURL() +'\');\n';
                 css += '\t background-size: '+canvas.width+'px '+canvas.height+'px;\n';
@@ -192,9 +202,9 @@ define(function() {
 
         that.validateCSS = function(includeRetina) {
 
-            var validation = document.createElement('div');
-            validation.setAttribute('class', 'validation');
-            validation.appendChild(createHeading('Sprite and CSS Validation'));
+            var validationElement = document.createElement('div');
+            validationElement.setAttribute('class', 'validationElement');
+            validationElement.appendChild(createHeading('Sprite and CSS validationElement'));
 
             for(var i = 0, l = images.length; i < l; i++) {
                 var file = images[i].file,
@@ -205,17 +215,17 @@ define(function() {
 
                 div.setAttribute('class', 'sprite sprite--' + classname);
 
-                validation.appendChild(h3);
-                validation.appendChild(div);
+                validationElement.appendChild(h3);
+                validationElement.appendChild(div);
 
                 if(includeRetina) {
                     retinaDiv = document.createElement('div');
                     retinaDiv.setAttribute('class', 'sprite sprite--retina sprite--' + classname);
-                    validation.appendChild(retinaDiv);
+                    validationElement.appendChild(retinaDiv);
                 }
             }
 
-            document.body.appendChild(validation);
+            document.body.appendChild(validationElement);
 
         };
 
