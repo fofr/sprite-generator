@@ -190,9 +190,11 @@ label {
 
 .generated-css {
     padding: 12px;
+    margin-bottom: 24px;
     display: block;
     white-space: pre;
     background: #fff;
     font-family: Monaco, Consolas, "Lucida Console", "Courier New", monospace;
     overflow: hidden;
+    tab-size: 2;
 }

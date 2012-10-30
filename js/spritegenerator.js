@@ -3,15 +3,14 @@ define(function() {
     var SpriteGenerator = function() {
 
         var that = this,
-            images = [],
-            canvasElement;
+            images = [];
 
         that.start = function() {
             var filesElement = document.getElementById('files');
             filesElement.addEventListener('change', that.handleFileSelect, false);
 
             var generateForm = document.getElementById('generate');
-            generate.addEventListener('submit', that.updateSprite, false);
+            generateForm.addEventListener('submit', that.generateSprite, false);
         };
 
         that.handleFileSelect = function(evt) {
@@ -21,8 +20,8 @@ define(function() {
                 var file = fileList[i],
                     fileReader = new FileReader();
 
+                // TODO: Gracefully tell the user the sprite inputs must be images
                 if (!file.type.match('image.*')) {
-                    // TODO: Gracefully tell the user the sprite inputs must be images
                     continue;
                 }
 
@@ -33,6 +32,7 @@ define(function() {
                     };
                 })(file);
 
+                // Parse image file information
                 fileReader.readAsDataURL(file);
             }
         };
@@ -47,82 +47,125 @@ define(function() {
             })(file, image);
         };
 
-        that.updateSprite = function(evt) {
-            evt.preventDefault();
-            that.generateSprite();
-            that.generateCSS();
-            that.validateCSS();
+        that.generateSprite = function(evt) {
+            evt && evt.preventDefault();
+
+            var originalCanvas = document.createElement('canvas'),
+                downsampledCanvas,
+                downsample = document.getElementById('resample').checked,
+                h2 = createHeading(downsample ? 'Generated Sprites' : 'Generated Sprite');
+
+            document.body.appendChild(h2);
+
+            that.setCanvasDimensions(originalCanvas);
+            that.drawCanvas(originalCanvas);
+            that.exportCanvas(originalCanvas);
+
+            if(downsample) {
+                downsampledCanvas = document.createElement('canvas');
+                that.setCanvasDimensions(downsampledCanvas, downsample);
+                that.drawCanvas(downsampledCanvas, downsample);
+                that.exportCanvas(downsampledCanvas);
+                that.generateCSS(downsampledCanvas, downsample, originalCanvas);
+            } else {
+                that.generateCSS(originalCanvas);
+            }
+
+            that.validateCSS(downsample);
         };
 
-        that.generateSprite = function() {
+        that.setCanvasDimensions = function(canvas, downsample) {
 
             var canvasHeight = 0,
-                canvasWidth = 0,
-                yOffset = 0;
-
-            canvasElement = document.createElement('canvas');
+                canvasWidth = 0;
 
             // Determine sprite dimensions
             for(var i = 0, l = images.length; i < l; i++) {
-                var imageElement = images[i].el;
-                if(imageElement.width > canvasWidth) {
-                    canvasWidth = imageElement.width;
+                var imageElement = images[i].el,
+                    width = downsample ? downsampleProperty(imageElement.width) : imageElement.width,
+                    height = downsample ? downsampleProperty(imageElement.height) : imageElement.height;
+
+                if(width > canvasWidth) {
+                    canvasWidth = width;
                 }
-                canvasHeight = canvasHeight + imageElement.height;
+                canvasHeight = canvasHeight + height;
             }
 
-            canvasElement.height = canvasHeight;
-            canvasElement.width = canvasWidth;
+            canvas.height = canvasHeight;
+            canvas.width = canvasWidth;
+        };
+
+        that.drawCanvas = function(canvas, downsample) {
+
+            var yOffset = 0;
 
             // Insert images into canvas
             for(var i = 0, l = images.length; i < l; i++) {
                 var imageElement = images[i].el,
-                    canvasContext = canvasElement.getContext('2d');
+                    width = downsample ? downsampleProperty(imageElement.width) : imageElement.width,
+                    height = downsample ? downsampleProperty(imageElement.height) : imageElement.height,
+                    canvasContext = canvas.getContext('2d');
 
-                canvasContext.drawImage(imageElement, 0, yOffset);
+                canvasContext.drawImage(imageElement, 0, yOffset, width, height);
                 images[i].yOffset = yOffset;
-                yOffset = yOffset + imageElement.height;
+                yOffset = yOffset + height;
             }
-
-            // Export canvas to image element for saving
-            that.exportCanvas(canvasElement);
         };
 
-        that.exportCanvas = function(canvasElement) {
-            var spriteOutputElement = new Image(),
-                h2 = createHeading('Generated Sprite');
-            spriteOutputElement.src = that.getDataUrl();
-
-            document.body.appendChild(h2);
+        that.exportCanvas = function(canvas) {
+            var spriteOutputElement = new Image();
+            spriteOutputElement.src = canvas.toDataURL();
             document.body.appendChild(spriteOutputElement);
         };
 
-        that.getDataUrl = function() {
-            return canvasElement.toDataURL();
-        };
-
-        that.generateCSS = function() {
+        that.generateCSS = function(canvas, includeRetina, retinaCanvas) {
 
             var css = '',
+                downsample = !!(includeRetina),
                 h2 = createHeading('Generated CSS'),
-                hiddenStyleElement = document.createElement('style'),
+                spriteSourceStyleElement = document.createElement('style'),
                 styleElement = document.createElement('style');
 
+            css += '/* For validation sprite uses generated data URIs - be sure to use the saved image resources instead */\n';
             css += '.sprite {\n';
-            css += '\tbackground-image: url(\'' + that.getDataUrl() + '\');\n';
+            css += '\tbackground-image: url(\'' + canvas.toDataURL() + '\');\n';
             css += '}\n\n';
 
-            hiddenStyleElement.innerHTML = css;
+            if(includeRetina) {
+
+                // Bulletproof retina media query (Firefox, Opera, Webkit and defaults)
+                css += '@media only screen and ((min--moz-device-pixel-ratio: 1.5), (-o-min-device-pixel-ratio: 3/2), (-webkit-min-device-pixel-ratio: 1.5), (min-device-pixel-ratio: 1.5), (min-resolution: 1.5dppx)) {\n';
+                css += '\t.sprite {\n';
+                css += '\t\t background-image: url(\''+ retinaCanvas.toDataURL() +'\');\n';
+
+                // Set background size of large retina sprite to the smaller sprite dimensions
+                // See: http://miekd.com/articles/using-css-sprites-to-optimize-your-website-for-retina-displays/
+                css += '\t\t background-size: '+canvas.width+'px '+canvas.height+'px;\n';
+                css += '\t}\n';
+                css += '}\n';
+
+                css += '\n/* For retina validation only, do not copy */\n';
+                css += '.sprite--retina {\n';
+                css += '\t background-image: url(\''+ retinaCanvas.toDataURL() +'\');\n';
+                css += '\t background-size: '+canvas.width+'px '+canvas.height+'px;\n';
+                css += '}\n';
+            }
+
+            spriteSourceStyleElement.innerHTML = css;
+            spriteSourceStyleElement.setAttribute('class', 'generated-css');
 
             css = '';
+            css += '\n/* Copy me */\n';
 
             for(var i = 0, l = images.length; i < l; i++) {
                 var file = images[i].file,
-                    element = images[i].el;
+                    element = images[i].el,
+                    width = downsample ? downsampleProperty(element.width) : element.width,
+                    height = downsample ? downsampleProperty(element.height) : element.height;
 
                 css += '.sprite--' + getClassnameFromFilename(file.name) + ' {\n';
-                css += '\twidth: ' + element.width + 'px;\n';
-                css += '\theight: ' + element.height + 'px;\n';
+                css += '\twidth: ' + width + 'px;\n';
+                css += '\theight: ' + height + 'px;\n';
                 css += '\tbackground-position: 0 -' + images[i].yOffset + 'px;\n';
                 css += '}\n\n';
             }
@@ -133,29 +176,36 @@ define(function() {
 
             document.body.appendChild(h2);
 
-            // Style element containing the data URI that we probably don't want to copy
-            document.body.appendChild(hiddenStyleElement);
+            // Style element containing the data URIs that we probably don't want to copy
+            document.body.appendChild(spriteSourceStyleElement);
 
             // Visible style element containing the CSS we want to copy
             document.body.appendChild(styleElement);
         };
 
-        that.validateCSS = function() {
+        that.validateCSS = function(includeRetina) {
 
             var validation = document.createElement('div');
             validation.setAttribute('class', 'validation');
-            validation.appendChild(createHeading('CSS validation'));
+            validation.appendChild(createHeading('Sprite and CSS Validation'));
 
             for(var i = 0, l = images.length; i < l; i++) {
                 var file = images[i].file,
                     classname = getClassnameFromFilename(file.name),
                     div = document.createElement('div'),
+                    retinaDiv,
                     h3 = createHeading(classname, 'h3');
 
                 div.setAttribute('class', 'sprite sprite--' + classname);
 
                 validation.appendChild(h3);
                 validation.appendChild(div);
+
+                if(includeRetina) {
+                    retinaDiv = document.createElement('div');
+                    retinaDiv.setAttribute('class', 'sprite sprite--retina sprite--' + classname);
+                    validation.appendChild(retinaDiv);
+                }
             }
 
             document.body.appendChild(validation);
@@ -168,6 +218,10 @@ define(function() {
 
             heading.innerText = text;
             return heading;
+        }
+
+        function downsampleProperty(property) {
+            return Math.ceil(property / 2);
         }
 
         function getClassnameFromFilename(filename) {
