@@ -184,6 +184,40 @@ label {
     margin-bottom: 6px;
 }
 
+.submit {
+    background: #ccc;
+    background: -webkit-linear-gradient(#ddd, #bbb);
+    background: -moz-linear-gradient(#ddd, #bbb);
+    background: -ms-linear-gradient(#ddd, #bbb);
+    background: -o-linear-gradient(#ddd, #bbb);
+    background: linear-gradient(#ddd, #bbb);
+    text-shadow: #fff 0 1px 0;
+    border: 1px solid #bbb;
+    margin-top: 24px;
+    padding: 12px 20px;
+    font-size: 14px;
+    border-radius: 30px;
+}
+
+.submit:hover {
+    background: #bbb;
+    background: -webkit-linear-gradient(#ccc, #aaa);
+    background: -moz-linear-gradient(#ccc, #aaa);
+    background: -ms-linear-gradient(#ccc, #aaa);
+    background: -o-linear-gradient(#ccc, #aaa);
+    background: linear-gradient(#ccc, #aaa);
+}
+
+.submit:active {
+    background: #aaa;
+    background: -webkit-linear-gradient(#999, #ccc);
+    background: -moz-linear-gradient(#999, #ccc);
+    background: -ms-linear-gradient(#999, #ccc);
+    background: -o-linear-gradient(#999, #ccc);
+    background: linear-gradient(#999, #ccc);
+    text-shadow: #ddd 0 1px 0;
+}
+
 /* ==========================================================================
    Generated CSS
    ========================================================================== */

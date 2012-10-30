@@ -48,7 +48,14 @@ define(function() {
         };
 
         that.generateSprite = function(evt) {
-            evt && evt.preventDefault();
+            evt.preventDefault();
+
+            if(images.length === 0) {
+                alert('Please select some images before continuing');
+                return;
+            }
+
+            evt.target.hidden = true;
 
             var originalCanvas = document.createElement('canvas'),
                 downsampledCanvas,
