@@ -11,7 +11,7 @@ define(function() {
     var SpriteGenerator = function() {
 
         var that = this,
-            images = [];
+            imageStore = [];
 
         that.start = function() {
             var filesElement = document.getElementById('files');
@@ -37,9 +37,9 @@ define(function() {
                 // Use anonymous immediate function to retain correct file scope
                 fileReader.onload = (function(filename) {
                     return function(loadEvent) {
-                        that.handleSelectedImageData(images, loadEvent.target.result, filename);
+                        that.handleSelectedImageData(imageStore, loadEvent.target.result, filename);
                     };
-                })(file);
+                })(file.name);
 
                 // Parse image file information
                 fileReader.readAsDataURL(file);
@@ -55,7 +55,7 @@ define(function() {
         that.handleFormSubmit = function(evt) {
             evt.preventDefault();
 
-            if(images.length === 0) {
+            if(imageStore.length === 0) {
                 alert('Please select some images before continuing');
                 return;
             }
@@ -65,7 +65,7 @@ define(function() {
 
             var downsample = document.getElementById('resample').checked;
 
-            that.generateSprite(images, downsample);
+            that.generateSprite(imageStore, downsample);
         };
 
         that.generateSprite = function(images, downsample) {
